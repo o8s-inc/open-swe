@@ -71,3 +71,19 @@ RUN echo "=== Installed versions ===" \
     && go version \
     && docker --version \
     && git --version
+
+# ── Open SWE agent application ──────────────────────────
+WORKDIR /app
+
+COPY pyproject.toml uv.lock ./
+RUN uv venv && uv sync --all-extras --no-dev
+
+COPY agent/ ./agent/
+COPY langgraph.json ./
+COPY static/ ./static/
+
+ENV PORT=8000
+EXPOSE 8000
+
+# Default: run LangGraph server (override CMD for sandbox use)
+CMD ["uv", "run", "langgraph", "dev", "--host", "0.0.0.0", "--port", "8000", "--no-browser"]
