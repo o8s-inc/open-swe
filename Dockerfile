@@ -75,7 +75,7 @@ RUN echo "=== Installed versions ===" \
 # ── Open SWE agent application ──────────────────────────
 WORKDIR /app
 
-COPY pyproject.toml uv.lock ./
+COPY pyproject.toml uv.lock README.md ./
 RUN uv venv && uv sync --all-extras --no-dev
 
 COPY agent/ ./agent/
