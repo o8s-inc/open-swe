@@ -79,6 +79,7 @@ COPY pyproject.toml uv.lock README.md ./
 RUN uv venv && uv sync --all-extras --no-dev
 
 COPY agent/ ./agent/
+COPY dashboard/ ./dashboard/
 COPY langgraph.json ./
 COPY static/ ./static/
 
