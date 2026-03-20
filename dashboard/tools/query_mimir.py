@@ -33,15 +33,17 @@ async def query_mimir(
 ) -> dict[str, Any]:
     """Query Mimir/Prometheus for cluster health metrics.
 
-    Fetches: total memory, memory usage, CPU usage, node count, and top pods.
+    Fetches: node count, pod count (total and running), CPU usage, memory usage,
+    top 10 pods by memory, and pod counts per namespace.
 
     Args:
         queries: Optional list of extra PromQL queries to run.
                  Each item should be the raw PromQL string.
 
     Returns:
-        Dict with node_count, cpu_cores, total_memory_gb, used_memory_gb,
-        memory_pct, top_pods, and optional extra_results.
+        Dict with node_count, pod_count, running_pods, cpu_cores_used,
+        total_memory_gb, used_memory_gb, memory_pct, top_pods,
+        pods_by_namespace, and optional extra_results.
     """
     import asyncio
 
@@ -50,10 +52,13 @@ async def query_mimir(
         "available_memory": "sum(node_memory_MemAvailable_bytes)",
         "cpu_usage": "sum(rate(node_cpu_seconds_total{mode!=\"idle\"}[5m]))",
         "node_count": "count(kube_node_info)",
+        "pod_count": "count(kube_pod_info)",
+        "running_pods": 'count(kube_pod_status_phase{phase="Running"})',
         "top_pods": (
-            "topk(5, sum by (namespace,pod)"
+            "topk(10, sum by (namespace,pod)"
             " (container_memory_working_set_bytes{container!=\"\"}))"
         ),
+        "pods_by_namespace": "count by (namespace) (kube_pod_info)",
     }
 
     results = await asyncio.gather(
@@ -66,7 +71,7 @@ async def query_mimir(
             return 0.0
         return float(r[0]["value"][1]) if r else 0.0
 
-    total_mem, avail_mem, cpu, nodes, top_pods_raw = results
+    total_mem, avail_mem, cpu, nodes, pod_count, running_pods, top_pods_raw, pods_by_ns_raw = results
 
     used_mem = scalar(total_mem) - scalar(avail_mem)
     total_mem_gb = scalar(total_mem) / (1024 ** 3)
@@ -82,13 +87,25 @@ async def query_mimir(
                 "memory_mb": round(float(r["value"][1]) / (1024 ** 2), 1),
             })
 
+    pods_by_namespace = []
+    if not isinstance(pods_by_ns_raw, Exception):
+        for r in pods_by_ns_raw:
+            pods_by_namespace.append({
+                "namespace": r["metric"].get("namespace", ""),
+                "count": int(float(r["value"][1])),
+            })
+        pods_by_namespace.sort(key=lambda x: x["count"], reverse=True)
+
     result: dict[str, Any] = {
         "node_count": int(scalar(nodes)),
+        "pod_count": int(scalar(pod_count)),
+        "running_pods": int(scalar(running_pods)),
         "cpu_cores_used": round(scalar(cpu), 2),
         "total_memory_gb": round(total_mem_gb, 1),
         "used_memory_gb": round(used_mem_gb, 1),
         "memory_pct": round(mem_pct, 1),
         "top_pods": top_pods,
+        "pods_by_namespace": pods_by_namespace,
     }
 
     # Run extra queries if provided
