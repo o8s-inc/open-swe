@@ -16,7 +16,7 @@ from .tools import query_argo, query_litellm, query_mimir, query_tracker
 
 # ── Model ──────────────────────────────────────────────────────────────────
 # Uses LiteLLM proxy if OPENAI_API_BASE is set (standard Open SWE pattern)
-_model_name = os.environ.get("DASHBOARD_MODEL", "gpt-4o-mini")
+_model_name = os.environ.get("DASHBOARD_MODEL", "anthropic/claude-haiku-4-5")
 
 llm = ChatOpenAI(
     model=_model_name,
