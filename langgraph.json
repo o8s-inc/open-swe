@@ -3,11 +3,17 @@
   "python_version": "3.12",
   "graphs": {
     "agent": "agent.server:get_agent",
-    "dashboard": "dashboard.server:get_graph"
+    "dashboard": "dashboard.server:get_graph",
+    "supervisor": "supervisor.graph:graph",
+    "general": "general.graph:graph",
+    "devops": "devops.graph:graph",
+    "code_review": "code_review.graph:graph",
+    "ops": "ops.graph:graph",
+    "docs": "docs.graph:graph"
   },
   "dependencies": ["."],
   "http": {
     "app": "agent.webapp:app"
   },
-  "env": ".env" 
+  "env": ".env"
 }
