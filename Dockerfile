@@ -80,6 +80,12 @@ RUN uv venv && uv sync --all-extras --no-dev
 
 COPY agent/ ./agent/
 COPY dashboard/ ./dashboard/
+COPY supervisor/ ./supervisor/
+COPY general/ ./general/
+COPY devops/ ./devops/
+COPY code_review/ ./code_review/
+COPY ops/ ./ops/
+COPY docs/ ./docs/
 COPY langgraph.json ./
 COPY static/ ./static/
 
