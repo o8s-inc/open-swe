@@ -35,9 +35,9 @@ class DocsState(TypedDict):
 
 def get_llm():
     return ChatOpenAI(
-        model=os.getenv("LLM_MODEL", "anthropic/claude-sonnet-4-20250514"),
-        openai_api_base=os.getenv("LITELLM_API_URL", "http://litellm.litellm.svc:4000"),
-        openai_api_key=os.getenv("LITELLM_API_KEY", os.getenv("OPENAI_API_KEY", "sk-placeholder")),
+        model=os.getenv("LLM_MODEL", "claude-sonnet-oauth"),
+        openai_api_base=os.getenv("OPENAI_API_BASE", os.getenv("LITELLM_API_URL", "http://litellm.litellm.svc:4000")),
+        openai_api_key=os.getenv("OPENAI_API_KEY", os.getenv("LITELLM_API_KEY", "sk-placeholder")),
     )
 
 async def scan_repos(state: DocsState) -> DocsState:
